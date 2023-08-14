@@ -18,6 +18,7 @@
     remote_src: yes
   become: yes
   loop:
-    - packages/app/build/
     - packages/app/public/
+    - packages/app/build/
+  changed_when: false
     

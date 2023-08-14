@@ -9,6 +9,8 @@ Tested on:
 
 ## Requirements
 
+Install node anyway you like, or let this role do it for you:
+
 * [ansible-role-nodejs](https://github.com/bleetube/ansible-role-nodejs) 
 
 `requirements.yml`:
@@ -37,10 +39,13 @@ This role should not be run as root.
 - hosts: snort
   roles:
     - role: nginxinc.nginx_core.nginx
-      become: true
+      become: yes
+    - role: bleetube.nodejs
+      become: yes
+      tags: nodejs
     - role: bleetube.snort
       tags: snort
   tasks:
     - import_tasks: nginx_conf.yml
-      become: true
+      become: yes
 ```
