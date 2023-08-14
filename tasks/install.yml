@@ -1,0 +1,23 @@
+---
+- name: Ensure requirements using yarn
+  ansible.builtin.command:
+    cmd: yarn
+    chdir: "{{ snort_repository_path }}"
+  when: snort_devmode or git_repository.changed
+
+- name: Build the frontend assets using yarn build
+  ansible.builtin.command:
+    cmd: yarn build
+    chdir: "{{ snort_repository_path }}"
+  when: snort_devmode or git_repository.changed
+
+- name: Copy frontend assets for the web proxy to serve directly
+  ansible.builtin.copy:
+    src: "{{ snort_repository_path }}/{{ item }}"
+    dest: "{{ snort_root_path }}"
+    remote_src: yes
+  become: yes
+  loop:
+    - packages/app/build/
+    - packages/app/public/
+    

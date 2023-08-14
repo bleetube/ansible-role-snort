@@ -1,0 +1,23 @@
+---
+- name: Ensure root path
+  ansible.builtin.file:
+    path:  "{{ snort_root_path }}"
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Clone git repository
+  ansible.builtin.git:
+    repo: "{{ snort_repository_url }}"
+    dest: "{{ snort_repository_path }}"
+    version: "{{ snort_version }}"
+    force: true
+  register: git_repository
+  when: not snort_devmode
+
+- name: "Ensure node is version {{ node_version }}"
+  ansible.builtin.command:
+    cmd: "n {{ node_version }}"
+    chdir: "{{ snort_repository_path }}"
+  when: snort_devmode or git_repository.changed
+  become: yes
