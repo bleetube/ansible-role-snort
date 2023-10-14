@@ -1,0 +1,13 @@
+[Unit]
+Description=Snort nostr web client
+
+[Service]
+User={{ snort_system_user }}
+Group={{ snort_system_group }}
+WorkingDirectory={{ snort_install_path }}
+ExecStart=yarn start
+Restart=always
+RestartSec=30
+
+[Install]
+WantedBy=multi-user.target

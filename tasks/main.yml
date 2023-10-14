@@ -1,9 +1,6 @@
 ---
-- name: Assert that we are not logged in as root
-  assert:
-    that:
-      - ansible_user_id != 'root'
-    fail_msg: "This role builds Javascript assets and should not be run as root. It will escalate privileges as needed."
-
-- import_tasks: setup.yml
+- import_tasks: setup-user.yml
+  become: yes
+- import_tasks: git.yml
+  become: yes
 - import_tasks: install.yml

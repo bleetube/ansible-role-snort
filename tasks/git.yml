@@ -1,0 +1,17 @@
+---
+- name: Ensure our target installation directory is owned by the appropriate user
+  ansible.builtin.file:
+    path:  "{{ snort_install_path }}"
+    owner: "{{ snort_system_user }}"
+    group: "{{ snort_system_group }}"
+    state: directory
+    mode: '0755'
+
+- name: Clone git repository
+  ansible.builtin.git:
+    force: true # write into an existing directory
+    repo: "{{ snort_repository_url }}"
+    dest: "{{ snort_install_path }}"
+    version: "{{ snort_version }}"
+  become_user: "{{ snort_system_user }}"
+  register: git_repository

@@ -1,24 +1,48 @@
 ---
-- name: Ensure requirements using yarn
-  ansible.builtin.command:
-    cmd: yarn
-    chdir: "{{ snort_repository_path }}"
-  when: snort_devmode or git_repository.changed
-
-- name: Build the frontend assets using yarn build
-  ansible.builtin.command:
-    cmd: yarn build
-    chdir: "{{ snort_repository_path }}"
-  when: snort_devmode or git_repository.changed
-
-- name: Copy frontend assets for the web proxy to serve directly
-  ansible.builtin.copy:
-    src: "{{ snort_repository_path }}/{{ item }}"
-    dest: "{{ snort_root_path }}"
-    remote_src: yes
+- name: Install service unit
+  ansible.builtin.template:
+    src: snort.service
+    dest: /etc/systemd/system/snort.service
   become: yes
+  register: service_unit
+
+- name: Reload systemd
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  when: service_unit.changed
+  become: yes
+
+# Note: You would think become_user would be enough, but it's not.  We only seem to get by when running doas/sudo directly.
+
+- name: Build snort
+  ansible.builtin.command:
+    cmd: "{{ ansible_become_method }} -u {{ snort_system_user }} {{ item }}"
+    chdir: "{{ snort_install_path }}"
+  become_user: "{{ snort_system_user }}"
+ #when: git_repository.changed or snort_always_build
+  when: snort_dangerously
   loop:
-    - packages/app/public/
-    - packages/app/build/
-  changed_when: false
+    - yarn
+    - yarn build
+    - yarn workspace @snort/app intl-extract
+    - yarn workspace @snort/app intl-compile
+
+#- name: Build the frontend assets using yarn build
+#  ansible.builtin.command:
+#    cmd: "{{ ansible_become_method }} -u {{ snort_system_user }} yarn build"
+#    chdir: "{{ snort_install_path }}"
+#  when: git_repository.changed or snort_always_build
+#  notify: restart snort
+#  become_user: "{{ snort_system_user }}"
+
+#- name: Copy frontend assets for the web proxy to serve directly
+#  ansible.builtin.copy:
+#    src: "{{ snort_repository_path }}/{{ item }}"
+#    dest: "{{ snort_root_path }}"
+#    remote_src: yes
+#  become: yes
+#  loop:
+#    - packages/app/public/
+#    - packages/app/build/
+#  changed_when: false
     

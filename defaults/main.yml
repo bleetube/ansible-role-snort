@@ -1,7 +1,8 @@
 ---
-node_version: 16
-snort_root_path: /var/www/snort
 snort_repository_url: https://github.com/v0l/snort.git
 snort_version: main # follow main branch
-snort_devmode: no
-snort_repository_path: "{{ ansible_env.HOME }}/src/snort"
+snort_install_path: /var/www/snort
+snort_system_user: snort
+snort_system_group: snort
+snort_always_build: no
+snort_dangerously: no

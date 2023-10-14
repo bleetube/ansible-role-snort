@@ -1,0 +1,37 @@
+---
+- name: Get nologin path
+  ansible.builtin.find:
+    paths:
+      - /bin
+      - /sbin
+      - /usr/bin
+      - /usr/sbin
+    patterns: nologin
+  register: nologin_bin
+
+- name: Create the group
+  ansible.builtin.group:
+    name: "{{ snort_system_group }}"
+    state: present
+    system: yes
+  when: snort_system_group != "root"
+
+- name: Create the system user
+  ansible.builtin.user:
+    name: "{{ snort_system_user }}"
+    groups: "{{ snort_system_group }}"
+    shell: "{{ nologin_bin.files[0].path }}"
+    system: yes
+    create_home: no
+   #home: "{{ snort_install_path }}" # this results in a .ansible directory which prevents us from cloning into the install path
+   #home: /nonexistent # this results in .yarn not being writable when we try to run yarn
+    home: /var/lib/snort
+  when: snort_system_user != "root"
+
+- name: Create the home directory
+  ansible.builtin.file:
+    path: /var/lib/snort
+    owner: "{{ snort_system_user }}"
+    group: "{{ snort_system_group }}"
+    state: directory
+  when: snort_system_user != "root"

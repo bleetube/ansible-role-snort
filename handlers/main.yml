@@ -1,0 +1,6 @@
+---
+- name: restart snort
+  ansible.builtin.service:
+    name: snort
+    state: restarted
+  become: yes
